@@ -65,7 +65,7 @@ async function generateImage(prompt) {
     logger.info('Starting image generation with Gemini AI', { prompt: prompt.substring(0, 50) });
 
     const response = await genAI.models.generateContent({
-      model: "gemini-2.0-flash-exp-image-generation",
+      model: "gemini-2.5-flash-image",
       contents: prompt,
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
@@ -134,7 +134,7 @@ async function modifyImage(prompt, imageBuffer) {
     const fullPrompt = `Modify this image according to the following instructions: ${prompt}`;
 
     const response = await genAI.models.generateContent({
-      model: "gemini-2.0-flash-exp-image-generation",
+      model: "gemini-2.5-flash-image",
       contents: [imagePart, fullPrompt],
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
