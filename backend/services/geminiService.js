@@ -4,6 +4,12 @@ const Image = require("../models/Image");
 const { AppError } = require("../middleware/errorHandler");
 const logger = require("../config/logger");
 
+// Use the current Gemini multimodal model that includes image support.
+// Pricing for Gemini 2.5 Flash (which supports text, image, and video)
+// is documented in the Gemini API pricing page:
+// https://ai.google.dev/gemini-api/docs/pricing
+const IMAGE_MODEL = "gemini-2.5-flash";
+
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
@@ -65,7 +71,7 @@ async function generateImage(prompt) {
     logger.info('Starting image generation with Gemini AI', { prompt: prompt.substring(0, 50) });
 
     const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash-image",
+      model: IMAGE_MODEL,
       contents: prompt,
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
@@ -134,7 +140,7 @@ async function modifyImage(prompt, imageBuffer) {
     const fullPrompt = `Modify this image according to the following instructions: ${prompt}`;
 
     const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash-image",
+      model: IMAGE_MODEL,
       contents: [imagePart, fullPrompt],
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
