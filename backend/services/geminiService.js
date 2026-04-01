@@ -62,31 +62,33 @@ function extractImageFromResponse(response) {
 }
 
 /**
- * Generate image using Gemini AI
+ * Generate image using free Pollinations API
  * @param {string} prompt - Text prompt for image generation
  * @returns {Promise<string>} Generated image URL
  */
 async function generateImage(prompt) {
   try {
-    logger.info('Starting image generation with Gemini AI', { prompt: prompt.substring(0, 50) });
+    logger.info('Starting image generation with Pollinations API', { prompt: prompt.substring(0, 50) });
 
-    const response = await genAI.models.generateContent({
-      model: IMAGE_MODEL,
-      contents: prompt,
-      config: {
-        responseModalities: [Modality.TEXT, Modality.IMAGE],
-      },
-    });
+    // Ensure prompt is properly encoded for the URL
+    const encodedPrompt = encodeURIComponent(prompt);
+    
+    // We append a random seed to avoid getting cached identical images for the same exact prompt
+    const seed = Math.floor(Math.random() * 1000000000);
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?nologo=true&seed=${seed}&width=1024&height=1024`;
 
-    const imageData = extractImageFromResponse(response);
+    const response = await fetch(pollinationsUrl);
 
-    if (!imageData) {
-      throw new AppError('Failed to generate image from AI service', 500);
+    if (!response.ok) {
+      throw new AppError('Failed to generate image from external API', response.status);
     }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const imageBuffer = Buffer.from(arrayBuffer);
 
     // Upload to Cloudinary
     const imageUrl = await uploadToCloudinary(
-      Buffer.from(imageData, 'base64'),
+      imageBuffer,
       "ai-image-studio/generated"
     );
 
